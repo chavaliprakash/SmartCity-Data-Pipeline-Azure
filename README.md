@@ -15,7 +15,10 @@ The pipeline follows a Medallion Architecture (Landing, Bronze, Silver, Gold lay
 ## Technologies Used
 
 * **Azure Data Factory (ADF):** For pipeline orchestration, scheduling, and monitoring.
-* **Azure Databricks:** A unified analytics platform leveraging Apache Spark for powerful data transformation and processing using Python and Delta Lake.
+* **Azure Databricks:** A unified analytics platform leveraging Apache Spark for powerful data transformation and processing.
+* **PySpark:** Utilized within Databricks for developing robust and scalable data transformation logic.
+* **Python:** The primary programming language used for scripting and data processing in Databricks.
+* **Delta Lake:** The open-source storage layer used for building the data lakehouse, providing ACID properties, schema enforcement, and time travel.
 * **Azure Data Lake Storage Gen2 (ADLS Gen2):** Scalable and secure data lake for storing all layers of data (Landing, Bronze, Silver, Gold).
 * **Azure Key Vault:** (Implicitly used by Databricks for credential management if service principals are configured for external data sources).
 * **Managed Service Identities (MSI):** For secure, credential-free authentication between Azure Data Factory and Azure Databricks, and between Databricks and ADLS Gen2.
