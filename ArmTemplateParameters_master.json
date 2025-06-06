@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "adf-smartcity-pipeline"
+        },
+        "ls_adls_gen2_servicePrincipalCredential": {
+            "value": ""
+        },
+        "ls_azure_databricks_properties_typeProperties_existingClusterId": {
+            "value": "0606-045354-66xqija"
+        },
+        "ls_adls_gen2_properties_typeProperties_url": {
+            "value": "https://smartcitystoragelake.dfs.core.windows.net/"
+        },
+        "ls_adls_gen2_properties_typeProperties_tenant": {
+            "value": "a5ee5d11-74a7-4629-a498-11552cf88b57"
+        },
+        "ls_adls_gen2_properties_typeProperties_servicePrincipalId": {
+            "value": "ae147781-ea96-46ff-bc2a-61ff5afd549f"
+        },
+        "containerUri": {
+            "value": ""
+        },
+        "containerSasToken": {
+            "value": ""
+        }
+    }
+}

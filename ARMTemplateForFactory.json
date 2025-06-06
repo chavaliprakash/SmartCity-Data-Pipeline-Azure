@@ -1,0 +1,348 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Data Factory name",
+            "defaultValue": "adf-smartcity-pipeline"
+        },
+        "ls_adls_gen2_servicePrincipalCredential": {
+            "type": "secureString",
+            "metadata": "Secure string for 'servicePrincipalCredential' of 'ls_adls_gen2'"
+        },
+        "ls_azure_databricks_properties_typeProperties_existingClusterId": {
+            "type": "string",
+            "defaultValue": "0606-045354-66xqija"
+        },
+        "ls_adls_gen2_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://smartcitystoragelake.dfs.core.windows.net/"
+        },
+        "ls_adls_gen2_properties_typeProperties_tenant": {
+            "type": "string",
+            "defaultValue": "a5ee5d11-74a7-4629-a498-11552cf88b57"
+        },
+        "ls_adls_gen2_properties_typeProperties_servicePrincipalId": {
+            "type": "string",
+            "defaultValue": "ae147781-ea96-46ff-bc2a-61ff5afd549f"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_azure_databricks')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureDatabricks",
+                "typeProperties": {
+                    "domain": "https://adb-591817371710550.10.azuredatabricks.net",
+                    "authentication": "MSI",
+                    "workspaceResourceId": "/subscriptions/a48f5e4e-61fa-4d6b-8a91-fcf2eba90a3d/resourceGroups/rg-smartcity-pipeline/providers/Microsoft.Databricks/workspaces/dbr-smartcity-workspace",
+                    "existingClusterId": "[parameters('ls_azure_databricks_properties_typeProperties_existingClusterId')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_adls_gen2')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "annotations": [],
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "[parameters('ls_adls_gen2_properties_typeProperties_url')]",
+                    "tenant": "[parameters('ls_adls_gen2_properties_typeProperties_tenant')]",
+                    "servicePrincipalId": "[parameters('ls_adls_gen2_properties_typeProperties_servicePrincipalId')]",
+                    "servicePrincipalCredentialType": "ServicePrincipalKey",
+                    "servicePrincipalCredential": {
+                        "type": "SecureString",
+                        "value": "[parameters('ls_adls_gen2_servicePrincipalCredential')]"
+                    }
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_landing')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_adls_gen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "DelimitedText",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileSystem": "landing"
+                    },
+                    "columnDelimiter": ",",
+                    "escapeChar": "\\",
+                    "firstRowAsHeader": true,
+                    "quoteChar": "\""
+                },
+                "schema": [
+                    {
+                        "name": "station_id",
+                        "type": "String"
+                    },
+                    {
+                        "name": "reading_time",
+                        "type": "String"
+                    },
+                    {
+                        "name": "pm2_5",
+                        "type": "String"
+                    },
+                    {
+                        "name": "pm10",
+                        "type": "String"
+                    },
+                    {
+                        "name": "co_level",
+                        "type": "String"
+                    },
+                    {
+                        "name": "so2_level",
+                        "type": "String"
+                    },
+                    {
+                        "name": "humidity",
+                        "type": "String"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_adls_gen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_bronze')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_adls_gen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileSystem": "bronze"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": [
+                    {
+                        "name": "station_id",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "reading_time",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "pm2_5",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "pm10",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "co_level",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "so2_level",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "humidity",
+                        "type": "DOUBLE"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_adls_gen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_silver')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_adls_gen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileSystem": "silver"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_adls_gen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_gold')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_adls_gen2",
+                    "type": "LinkedServiceReference"
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileSystem": "gold"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": [
+                    {
+                        "name": "station_id",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "reading_time",
+                        "type": "UTF8"
+                    },
+                    {
+                        "name": "pm2_5",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "pm10",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "co_level",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "so2_level",
+                        "type": "DOUBLE"
+                    },
+                    {
+                        "name": "humidity",
+                        "type": "DOUBLE"
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_adls_gen2')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pl_smartcity_data_processing')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "Bronze_Ingestion_Notebook",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/saiprakash75@hotmail.com/SmartCityPipeline/01_smartcity_bronze"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "ls_azure_databricks",
+                            "type": "LinkedServiceReference"
+                        }
+                    },
+                    {
+                        "name": "Silver_Cleaning_Notebook",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [
+                            {
+                                "activity": "Bronze_Ingestion_Notebook",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/saiprakash75@hotmail.com/SmartCityPipeline/02_smartcity_silver"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "ls_azure_databricks",
+                            "type": "LinkedServiceReference"
+                        }
+                    },
+                    {
+                        "name": "Gold_Enriching_Notebook",
+                        "type": "DatabricksNotebook",
+                        "dependsOn": [
+                            {
+                                "activity": "Silver_Cleaning_Notebook",
+                                "dependencyConditions": [
+                                    "Succeeded"
+                                ]
+                            }
+                        ],
+                        "policy": {
+                            "timeout": "0.12:00:00",
+                            "retry": 0,
+                            "retryIntervalInSeconds": 30,
+                            "secureOutput": false,
+                            "secureInput": false
+                        },
+                        "userProperties": [],
+                        "typeProperties": {
+                            "notebookPath": "/Users/saiprakash75@hotmail.com/SmartCityPipeline/03_smartcity_gold"
+                        },
+                        "linkedServiceName": {
+                            "referenceName": "ls_azure_databricks",
+                            "type": "LinkedServiceReference"
+                        }
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_azure_databricks')]"
+            ]
+        }
+    ]
+}
