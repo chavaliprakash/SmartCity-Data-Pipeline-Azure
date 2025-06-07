@@ -1,4 +1,4 @@
-# Smart City Infrastructure Analytics Platform (Batch Data Pipeline)
+# Smart City Infrastructure Data Pipeline (Batch)
 
 ## Project Overview
 
