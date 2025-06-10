@@ -12,7 +12,7 @@ This project implements a robust, end-to-end batch data pipeline on Microsoft Az
 
 The pipeline follows a Medallion Architecture (Landing, Bronze, Silver, Gold layers) within Azure Data Lake Storage Gen2, orchestrated by Azure Data Factory, with data processing powered by Azure Databricks.
 
-![Architecture](screenshots/architecture.png)
+![Architecture](screenshots/architecture2.png)
 
 ## Technologies Used
 
